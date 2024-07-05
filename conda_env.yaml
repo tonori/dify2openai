@@ -1,0 +1,43 @@
+name: dify2openai
+channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+dependencies:
+  - annotated-types=0.6.0=py311hca03da5_0
+  - anyio=4.2.0=py311hca03da5_0
+  - bzip2=1.0.8=h80987f9_6
+  - ca-certificates=2024.3.11=hca03da5_0
+  - click=8.1.7=py311hca03da5_0
+  - fastapi=0.103.0=py311hca03da5_0
+  - h11=0.14.0=py311hca03da5_0
+  - idna=3.7=py311hca03da5_0
+  - libffi=3.4.4=hca03da5_1
+  - ncurses=6.4=h313beb8_0
+  - openssl=3.0.14=h80987f9_0
+  - pip=24.0=py311hca03da5_0
+  - pydantic=2.5.3=py311hca03da5_0
+  - pydantic-core=2.14.6=py311hf0e4da2_0
+  - python=3.11.9=hb885b13_0
+  - readline=8.2=h1a28f6b_0
+  - setuptools=69.5.1=py311hca03da5_0
+  - sniffio=1.3.0=py311hca03da5_0
+  - sqlite=3.45.3=h80987f9_0
+  - starlette=0.27.0=py311hca03da5_0
+  - tk=8.6.14=h6ba3021_0
+  - typing-extensions=4.11.0=py311hca03da5_0
+  - typing_extensions=4.11.0=py311hca03da5_0
+  - tzdata=2024a=h04d1e81_0
+  - uvicorn=0.20.0=py311hca03da5_0
+  - wheel=0.43.0=py311hca03da5_0
+  - xz=5.4.6=h80987f9_1
+  - zlib=1.2.13=h18a0788_1
+  - pip:
+      - certifi==2024.7.4
+      - httpcore==1.0.5
+      - httpx==0.27.0
+      - python-dotenv==1.0.1
+      - typenv==0.2.0
+prefix: /Users/aurora/miniconda3/envs/dify2openai
