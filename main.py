@@ -199,13 +199,13 @@ async def stream_completions_handler(
 
             _event_data: DifyMessageEventChunk = event_data
 
-            is_not_last_chunk = _event_data.get("event") != "message_end"
+            is_last_chunk = _event_data.get("event") == "message_end"
 
             data = ChatCompletionsStreamChunk(
                 id=_event_data.get("message_id"),
                 conversation_id=_event_data.get("conversation_id"),
                 task_id=_event_data.get("task_id"),
-                object="chat.completion.chunk" if is_not_last_chunk else "chat.completion.usage",
+                object="chat.completion.chunk" if is_last_chunk is False else "chat.completion.usage",
                 created=_event_data.get("created_at"),
                 model=model,
                 choices=[
@@ -214,8 +214,8 @@ async def stream_completions_handler(
                         delta=ChatCompletionsStreamChoiceDelta(
                             role="assistant" if index == 0 else None,
                             content=_event_data.get("answer")
-                        ) if is_not_last_chunk else {},
-                        finish_reason="stop" if is_not_last_chunk else None
+                        ) if is_last_chunk is False else {},
+                        finish_reason="stop" if is_last_chunk else None
                     )
                 ],
                 usage=ChatCompletionUsage(
@@ -223,7 +223,7 @@ async def stream_completions_handler(
                     completion_tokens=_event_data.get("metadata", {}).get("usage", {}).get("completion_tokens",
                                                                                            0),
                     total_tokens=_event_data.get("metadata", {}).get("usage", {}).get("total_tokens", 0)
-                ) if is_not_last_chunk else None
+                ) if is_last_chunk else None
             ).model_dump_json()
 
             yield f'data: {data}\n\n'.encode()
@@ -233,10 +233,11 @@ async def stream_completions_handler(
 
 @openai_routes.post(
     "/chat/completions",
+    response_model=ChatCompletionsResponse
 )
 async def chat_completions(
         body: ChatCompletionsBody,
-        token: str = Depends(get_token),
+        token: str = Depends(get_token)
 ):
     request_data = ChatMessageBody(
         query=list(filter(lambda message: message.role == "user", body.messages))[-1].content,
