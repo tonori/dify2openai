@@ -3,6 +3,7 @@ import json
 import re
 from env import env
 from fastapi import FastAPI, APIRouter, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Dict, Optional, List, Literal, AsyncIterable
@@ -23,6 +24,15 @@ openai_routes = APIRouter(
 app = FastAPI(
     title="Dify2OpenAI",
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 error_handler_register(app)
 
 
@@ -82,14 +92,14 @@ class ChatCompletionsBody(BaseModel):
     )
     detail: Optional[bool] = Field(default=False, description="是否返回详细信息（usage）")
     stream: Optional[bool] = Field(default=False, description="是否使用流式模式返回")
-    messages: List[Message] = Field(description="消息列表", max_length=1, min_length=1)
+    messages: List[Message] = Field(description="消息列表", min_length=1)
 
     @field_validator('messages')
     def check_messages(cls, messages: List[Message]):
         user_messages = list(filter(lambda message: message.role == "user", messages))
-        if len(user_messages) != 1:
+        if len(user_messages) < 1:
             raise ValidationException(
-                message="Only one user message can be included in the 'messages' container."
+                message="One user message must be included in the 'messages' container."
             )
         return messages
 
@@ -189,11 +199,13 @@ async def stream_completions_handler(
 
             _event_data: DifyMessageEventChunk = event_data
 
+            is_not_last_chunk = _event_data.get("event") != "message_end"
+
             data = ChatCompletionsStreamChunk(
                 id=_event_data.get("message_id"),
                 conversation_id=_event_data.get("conversation_id"),
                 task_id=_event_data.get("task_id"),
-                object="chat.completion.chunk",
+                object="chat.completion.chunk" if is_not_last_chunk else "chat.completion.usage",
                 created=_event_data.get("created_at"),
                 model=model,
                 choices=[
@@ -202,8 +214,8 @@ async def stream_completions_handler(
                         delta=ChatCompletionsStreamChoiceDelta(
                             role="assistant" if index == 0 else None,
                             content=_event_data.get("answer")
-                        ) if _event_data.get("event") == "message" else {},
-                        finish_reason="stop" if _event_data.get("event") == "message_end" else None
+                        ) if is_not_last_chunk else {},
+                        finish_reason="stop" if is_not_last_chunk else None
                     )
                 ],
                 usage=ChatCompletionUsage(
@@ -211,7 +223,7 @@ async def stream_completions_handler(
                     completion_tokens=_event_data.get("metadata", {}).get("usage", {}).get("completion_tokens",
                                                                                            0),
                     total_tokens=_event_data.get("metadata", {}).get("usage", {}).get("total_tokens", 0)
-                ) if _event_data.get("event") == "message_end" else None
+                ) if is_not_last_chunk else None
             ).model_dump_json()
 
             yield f'data: {data}\n\n'.encode()
@@ -227,7 +239,7 @@ async def chat_completions(
         token: str = Depends(get_token),
 ):
     request_data = ChatMessageBody(
-        query=list(filter(lambda message: message.role == "user", body.messages))[0].content,
+        query=list(filter(lambda message: message.role == "user", body.messages))[-1].content,
         inputs=body.inputs,
         response_mode="streaming" if body.stream else "blocking",
         user=body.user,
