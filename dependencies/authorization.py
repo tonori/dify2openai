@@ -1,5 +1,5 @@
 from fastapi import Depends
-from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials
+from fastapi.security import APIKeyHeader
 from error.exception import UnauthorizedException
 from typing import Optional
 
@@ -13,4 +13,4 @@ def get_token(token: Optional[str] = Depends(token_header)):
     if token is None:
         raise UnauthorizedException()
 
-    return token.replace("Bearer ", "")
+    return token.split(":")[1] or token
