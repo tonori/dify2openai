@@ -57,9 +57,9 @@ python main.py
 | agent          | Agent |
 | workflow       | 工作流   |
 
-~~为了适配 Dify 的应用类型响应差别，可以在 Authorization Header 中以 `{identifier}:{key}` 的格式指定应用类型。例如：`chat:app-xxxxxxxxxxxx` / `agent:app-xxxxxxxxxxxx` / `workflow:app-xxxxxxxxxxxx`~~ **(这还没做)**
+为了适配 Dify 的应用类型响应差别，可以在 Authorization Header 中以 `{identifier}:{key}` 的格式指定应用类型。例如：`chat:app-xxxxxxxxxxxx` / `agent:app-xxxxxxxxxxxx` / `workflow:app-xxxxxxxxxxxx`
 
-~~也可以在 completions 接口的 Request JSON 中指定 `type` 参数，如果在 Authorization Header 和 Request JSON 中同时指定了应用类型，以 Request JSON 中的值为准。~~ **(这也还没做)**
+也可以在 completions 接口的 Request JSON 中指定 `type` 参数，如果在 Authorization Header 和 Request JSON 中同时指定了应用类型，以 Request JSON 中的值为准。
 
 ```json
 {
